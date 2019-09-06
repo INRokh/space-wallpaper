@@ -40,16 +40,28 @@ The codebase allows to extend functionality adding support for different APIs. T
 
 When the program first opens to the user, there will be information about application and list of commands which explains how to use it. 
 
+![Start](images/start.png)
+
 Desktop wallpaper changes depending on chosen command: “l” - latest image, “r” - random image and image of a specific date. The user will see:
 - current status information “Loading image” 
 - information about image: date, title and explanation. 
 - user’s desktop wallpaper automatically will be changed by the chosen image.
 
+![](images/example.png)
+
 If the image is not found or there is a video instead of image, the user will receive an error message.
+
+![](images/no_image.png)
 
 If the user types invalid command or command “YYYY-MM-DD” with incorrect date format they will receive an error message.
 
+![](images/invalid_comm.png)
+
 If the user choose option “q” - exit the application.
+
+## Control Flow Diagram
+
+![](images/control_flow_diagram.png)
 
 Implementation Plan
 
@@ -93,6 +105,8 @@ Test scenario:
 1. Wait for the image to download, corresponding message will be printed.
 1. Compare desktop image with the image on the website https://apod.nasa.gov/apod/ap190904.html
 1. Type “q” to quit.
+
+![](images/trello.png)
 
 
 
