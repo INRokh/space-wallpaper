@@ -36,45 +36,6 @@ The application handles API errors, retrying temporary errors: HTTP status codes
 
 The codebase allows to extend functionality adding support for different APIs. The API clients should be easily swappable. 
 
-## User Interaction and Experience
-
-When the program first opens to the user, there will be information about application and list of commands which explains how to use it. 
-
-![Start](images/start.png)
-
-Desktop wallpaper changes depending on chosen command: “l” - latest image, “r” - random image and image of a specific date. The user will see:
-- current status information “Loading image” 
-- information about image: date, title and explanation. 
-- user’s desktop wallpaper automatically will be changed by the chosen image.
-
-![](images/example.png)
-
-If the image is not found or there is a video instead of image, the user will receive an error message.
-
-![](images/no_image.png)
-
-If the user types invalid command or command “YYYY-MM-DD” with incorrect date format they will receive an error message.
-
-![](images/invalid_comm.png)
-
-If the user choose option “q” - exit the application.
-
-## Control Flow Diagram
-
-![](images/control_flow_diagram.png)
-
-Implementation Plan
-
-Priority | Title | Description
---- | --- | ---
-P0 | API client | Core functionality which establishes connection to NASA APOD API and performs API calls.
-P0 | Image download | Gets the image and saves it to a file. 
-P0 | Change desktop settings | Programmatically change desktop wallpaper. 
-P1 | Random date selection | Choose a random date within given interval. The interval is between 1995 to current date. 
-P2 | Custom date selection | Read custom date from user input, verify and attempt to download image. 
-P1 | UI | Main user interaction loop. | 04/09/2019
-P3 | Graceful handling of unsupported media formats. | Pick another date if there is no image for selected date. 
-
 ## User acceptance tests
 
 ### Multiple random images
@@ -106,7 +67,6 @@ Test scenario:
 1. Compare desktop image with the image on the website https://apod.nasa.gov/apod/ap190904.html
 1. Type “q” to quit.
 
-![](images/trello.png)
 
 
 
