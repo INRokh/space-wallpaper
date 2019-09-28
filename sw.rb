@@ -1,65 +1,14 @@
 require "faraday"
-require "json"
 require "date"
-require 'optparse'
+require "optparse"
 require "colorize"
-
-# Creat own custom exceptions, subclass of StandardError.
-class UnsupportedMediaType < StandardError
-end
-
-class NasaClient
-    APOD_URL = "https://api.nasa.gov/planetary/apod" 
-    def initialize(conn, api_key)
-        @conn = conn
-        @api_key = api_key
-
-        # Initial request to check connection and API key.
-        url = "#{APOD_URL}?api_key=#{@api_key}"
-        response = @conn.get(url)  
-        h = JSON.parse(response.body)
-        if h.key?("error") and h["error"]["code"] == "API_KEY_INVALID"
-            raise ArgumentError, "Invalid API key."
-        end
-    end
-
-    # Download image. 
-    def load_image(date, file_path)
-        url = "#{APOD_URL}?api_key=#{@api_key}&hd=True&date=#{date}"
-        response = @conn.get(url)  
-        h = JSON.parse(response.body)
-        if h.key?("error") and h["error"]["code"] == "API_KEY_INVALID"
-            raise ArgumentError, "Invalid API key."
-        end
-        if h["media_type"] != "image"
-            raise UnsupportedMediaType
-        end
-        if h["hdurl"].nil?
-            raise ArgumentError, "Image URL not found in APOD response."
-        end
-        image_response = @conn.get(h["hdurl"])
-        File.open(file_path, 'wb') {|fp| fp.write(image_response.body)}
-        return h["date"], h["title"], h["explanation"]
-    end
-end
+require_relative "nasa_apod"
 
 # Change wallpaper
 def change_OSX_wallpaper(image_path)
     path = File.absolute_path(image_path)
     system("osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"#{path}\"'")
     system("Killall Dock")
-end
-
-# Return random date from range
-def random_picture
-    date_from = Time.new(1995,6,22)
-    random_date = Time.at(date_from + rand * (Time.now.to_f - date_from.to_f)).strftime("%Y-%m-%d")
-    return random_date
-end
-
-# Parse user's input date
-def parse_date(str)
-    return DateTime.parse(str).strftime("%Y-%m-%d")
 end
 
 # Hash with retry settings. 
@@ -90,6 +39,7 @@ if api_key == ""
     exit
 end
 
+# Create a new client.
 apod = NasaClient.new(conn, api_key)
 puts "Space Wallpaper changes desktop wallpaper using NASA picture of the day.".colorize(:color => :green)
 while true
@@ -103,23 +53,28 @@ while true
     if answ == "q"
         break
     end
-    date = ""
+    image_name = "image.jpg"
+    specific_date = nil
     begin
-        if answ == "l"
-            date = ""
-        elsif answ == "r"
-            date = random_picture()  
-        else
-            date = parse_date(answ)  
+        if answ != "l" && answ != "r"
+            specific_date = Date.parse(answ)
         end
     rescue ArgumentError
         puts "Invalid command, use l - latest image, r - radom image, q - to exit or date in format YYYY-MM-DD."
         next
     end
-    image_name = "image.jpg"
-    puts "Loading image" 
+            
     begin
-        date, title, explanation = apod.load_image(date, image_name)
+        date, title, explanation = "", "", ""
+        case answ 
+        when "l"
+            date, title, explanation = load_latest_skipping_video(apod, Date.today - 1, image_name)
+        when "r"
+            date, title, explanation = load_random_skipping_video(apod, image_name)
+        else 
+            date, title, explanation = apod.load_image(specific_date, image_name)
+        end
+        puts "Loading image" 
         puts "Date: ".colorize(:color => :light_blue), date
         puts "Title: ".colorize(:color => :light_blue), title
         puts "Explanation: ".colorize(:color => :light_blue), explanation
